@@ -40,6 +40,27 @@ const fileNames = months.map(i => `${i}.json`);
 const downloadDir = 'invoices';
 mkdirp(downloadDir);
 
+const s = fileNames.reduce((sum, fileName) => {
+  const f = fs.readFileSync(fileName, 'utf8');
+
+  const json = JSON.parse(f);
+  if (!json.body.StatementHierarchyContainerRTO) {
+    return sum;
+  }
+  const s = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid.reduce((sum, p) => {
+    const x = p.amountGross.replace(/EUR (\d+.\d+)/, '$1')
+    return sum + parseFloat(x);
+  }, 0);
+
+  console.log(`On month ${fileName} you spent ${s.toFixed(2)} €`);
+
+  return sum + s;
+}, 0);
+
+console.log('\n-----------------------------------------------');
+console.log(`In ${year} you spent a total of ${s.toFixed(2)}`);
+console.log('-----------------------------------------------\n');
+
 fileNames.forEach(fileName => {
 
   const f = fs.readFileSync(fileName, 'utf8');
@@ -48,7 +69,11 @@ fileNames.forEach(fileName => {
     return;
   }
 
-  json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid.forEach(invoice => {
+  const paidInvoices = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid;
+  if (!paidInvoices) {
+    return;
+  }
+  paidInvoices.forEach(invoice => {
     const date = invoice.statementDate;
     const matches = date.match(/(\d+),(\d+),(\d+),\d+,\d+,\d+,UTC/);
     const year = matches[1];
@@ -76,24 +101,4 @@ fileNames.forEach(fileName => {
   });
 
 });
-
-const s = fileNames.reduce((sum, fileName) => {
-
-  const f = fs.readFileSync(fileName, 'utf8');
-
-  const json = JSON.parse(f);
-  if (!json.body.StatementHierarchyContainerRTO) {
-    return sum;
-  }
-  const s = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid.reduce((sum, p) => {
-    const x = p.amountGross.replace(/EUR (\d+.\d+)/, '$1')
-    return sum + parseFloat(x);
-  }, 0);
-
-  console.log(`On month ${fileName} you spent ${s.toFixed(2)} €`);
-
-  return sum + s;
-}, 0);
-
-console.log(`In ${year} you spent a total of ${s.toFixed(2)}`);
 
