@@ -3,6 +3,13 @@
 const fs = require('fs');
 const https = require('https');
 
+const year = process.argv[2];
+if (!year) {
+  console.error('Usage: node index.js <year>');
+  console.error('  example: node index.js 2016');
+  process.exit(1);
+}
+
 const mkdirp = path => {
   try {
     fs.mkdirSync(path);
@@ -16,7 +23,7 @@ const months = Array.apply(null, { length: 12  }).map(Number.call, Number).map(n
 months.forEach(m => {
   console.log(`Downloading monthly recap ${m}`);
   const result = require('child_process').spawnSync('curl', [
-    `https://www.car2go.com/rest/api/statements/own/sorted/2015,${m},1,0,0,0,UTC?_=1453322332055`,
+    `https://www.car2go.com/rest/api/statements/own/sorted/${year},${m},1,0,0,0,UTC?_=1453322332055`,
     '--compressed',
     '-b', 'cookies.txt'
   ]);
