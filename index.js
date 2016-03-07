@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const https = require('https');
-const cookie = require('dunkatron-cookies');
 
 const mkdirp = path => {
   try {
