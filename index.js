@@ -47,7 +47,10 @@ const s = fileNames.reduce((sum, fileName) => {
   if (!json.body.StatementHierarchyContainerRTO) {
     return sum;
   }
-  const s = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid.reduce((sum, p) => {
+
+  // payment via creditcard vs withdrawal
+  const rides = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards ? json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid : json.body.StatementHierarchyContainerRTO.paymentprofiles.withdrawal.open;
+  const s = rides.reduce((sum, p) => {
     const x = p.amountGross.replace(/EUR (\d+.\d+)/, '$1')
     return sum + parseFloat(x);
   }, 0);
@@ -69,7 +72,8 @@ fileNames.forEach(fileName => {
     return;
   }
 
-  const paidInvoices = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid;
+  // payment via creditcard vs withdrawal
+  const paidInvoices = json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards ? json.body.StatementHierarchyContainerRTO.paymentprofiles.creditcards.paid : json.body.StatementHierarchyContainerRTO.paymentprofiles.withdrawal.open;
   if (!paidInvoices) {
     return;
   }
